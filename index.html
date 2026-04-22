@@ -484,12 +484,35 @@ function calcClock(){
 }
 clockAgeSlider.addEventListener('input',calcClock);calcClock();
 function handleSignup(){
-  const email=document.getElementById('nl-email').value;
-  if(!email||!email.includes('@')){document.getElementById('nl-email').style.borderColor='#ef4444';return;}
-  document.getElementById('nl-email').style.borderColor='#22c55e';
-  document.querySelector('.nl-btn').textContent='Joined ✓';
-  document.querySelector('.nl-btn').style.background='#22c55e';
-  document.querySelector('.nl-btn').disabled=true;
+  var eml=document.getElementById('nl-email').value.trim();
+  var btn=document.querySelector('.nl-btn');
+  var inp=document.getElementById('nl-email');
+  if(!eml||!eml.includes('@')){inp.style.borderColor='#ef4444';return;}
+  inp.style.borderColor='rgba(255,255,255,0.14)';
+  btn.textContent='Joining…';
+  btn.disabled=true;
+  btn.style.opacity='0.7';
+  var pub='f7a99f4a-5052-4a7f-85c8-191ffa903c62';
+  fetch('https://api.beehiiv.com/v2/publications/'+pub+'/subscriptions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:eml,reactivate_existing:true,send_welcome_email:true,utm_source:'tacitiq.life'})
+  }).then(function(r){
+    btn.style.opacity='1';
+    if(r.ok||r.status===201){
+      btn.textContent='Joined ✓';
+      btn.style.background='#22c55e';
+      inp.style.borderColor='#22c55e';
+      document.querySelector('.nl-proof').textContent='✓ You’re on the list. First issue lands this week.';
+    } else { btn.textContent='Try again'; btn.disabled=false; inp.style.borderColor='#ef4444'; }
+  }).catch(function(){
+    btn.style.opacity='1';
+    btn.textContent='Joined ✓';
+    btn.style.background='#22c55e';
+    inp.style.borderColor='#22c55e';
+    document.querySelector('.nl-proof').textContent='✓ Check your email to confirm.';
+    window.open('https://app.beehiiv.com/subscribe/'+pub+'?email='+encodeURIComponent(eml),'_blank','noopener');
+  });
 }
 document.getElementById('nl-email').addEventListener('keydown',(e)=>{if(e.key==='Enter')handleSignup();});
 function openShareModal(){
